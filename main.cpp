@@ -1,21 +1,57 @@
 #include <stdio.h>
 #include <math.h>
+#include <ctype.h>
 
-double a1 = 0, a2 = 0, b1 = 0, b2 = 0, c1 = 0, c2 = 0;
+enum {openfunk, closefunk, op, SQRT, digit, x, x2, equals, END};
+
+typedef struct coeff {
+    double a;
+    double b;
+    double c;
+} CF;
 
 void Solv(double *a, double *b, double *c);
+void getcf(CF *);
+int getop(char c);
+int getch(void);
+void ungetch(int);
 
 int main () {
-    printf("Enter the monomials of the equation in this form \"a*x^2\", \"b*x\", \"c\", where a, b, c is numeric expressions.\n");
+    printf("Enter the monomials of the equation in this form \"ax^2\", \"bx\", \"c\", where a, b, c is numeric expressions.\n");
+    CF left;
+    left.a = left.b = left.c = 0.0;
+    CF right;
+    right.a = right.b = right.c = 0.0;
+
+    getcf(&left);
 
     double a = 0, b = 0, c = 0;
-    scanf("%lf%lf%lf", &a, &b, &c);
-    /*a = a1 - a2;
-    b = b1 - b2;
-    c = c1 - c2;*/
+    a = left.a - right.a;
+    b = left.b - right.b;
+    c = left.c - right.c;
     Solv(&a, &b, &c);
     return 0;
-    error: printf("Invalid input.");
+}
+void getcf(CF *d) {
+    char c;
+    switch (getop(c)) {
+        case openfunk:
+            ;
+        case closefunk:
+            ;
+        case op:
+            ;
+        case digit:
+            ;
+        case SQRT:
+            ;
+        case x:
+            ;
+        case x2:
+            ;
+        default:
+            ;
+    }
 }
 void Solv(double *a, double *b, double *c) { //Вычисляем решение по коэффициэнтам
     if (*a == 0.0) {
@@ -43,10 +79,47 @@ void Solv(double *a, double *b, double *c) { //Вычисляем решение по коэффициэнта
         }
     }
 }
-#define MAXCNT 100
-double SUM[MAXCNT];
-double *p; //указатель на свободную ячейку
-p = &SUM;
-void operation(double &a, double &b, double &c) {
+int getop(char c) {
+    while((c = getch()) == ' ');
+    if (c == '(') return openfunk;
+    if (c == '*' || c == '/' || c == '+' || c == '-') {
+        if (!isdigit(c = getch())) {
+            return op;
+        }
+        ungetch(c);
+    }
+    if (c == ')') return closefunk;
+    if (c == 's') {
+        if((c = getch()) == 'q') {
+            if((c = getch()) == 'r') {
+                if((c = getch()) == 't') {
+                    if((c = getch()) == '(') {
+                        return SQRT;
+                    }
+                }
+            }
+        }
+    }
+    if (isdigit(c) || c == '+' || c == '-' || tolower(c) == 'x') {
+        ungetch(c);
+        return digit;
+    }
+    if (c == '=') return equals;
+    if (c == '\n') return END;
+    return EOF;
+}
+#define BUFSIZE 100
+char buf[BUFSIZE];
 
+int bufp = 0;
+
+int getch(void) {
+    return (bufp > 0) ? buf[--bufp] : getchar();
+}
+void ungetch(int c) {
+    if (bufp >= BUFSIZE) {
+        printf("ungetch(): I'm full!!!\n");
+    } else {
+        buf[bufp++] = c;
+    }
 }
